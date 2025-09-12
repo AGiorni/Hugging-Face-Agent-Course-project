@@ -1,9 +1,11 @@
 # imports
 from typing import TypedDict, Annotated
 from langgraph.graph.message import add_messages
-from langchain_core.messages import AnyMessage
+from langchain_core.messages import AnyMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import START, StateGraph
+
+import prompts_lib as my_prompts
 
 import os
 from dotenv import load_dotenv  
@@ -24,10 +26,14 @@ llm = AzureChatOpenAI(
     temperature=0
     )
 
+
+system_prompt = my_prompts.system_prompt
+system_message = SystemMessage(content=system_prompt)
+
 # define nodes
 def assistant(state: State):
     return {
-        "messages": [llm.invoke(state["messages"])],
+        "messages": [llm.invoke(state["messages"])]
     }
 
 # define graph
@@ -41,4 +47,4 @@ builder.add_edge(START, "assistant")
 # No conditional edges in this simple example
 
 # compile gtaph
-graph = builder.compile()
+agent = builder.compile()

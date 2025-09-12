@@ -4,6 +4,9 @@ import requests
 import inspect
 import pandas as pd
 
+import prompts_lib
+import main_agent
+
 # (Keep Constants as is)
 # --- Constants ---
 DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
@@ -12,12 +15,19 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 # ----- THIS IS WERE YOU CAN BUILD WHAT YOU WANT ------
 class BasicAgent:
     def __init__(self):
-        print("BasicAgent initialized.")
+        pass
     def __call__(self, question: str) -> str:
         print(f"Agent received question (first 50 chars): {question[:50]}...")
-        fixed_answer = "This is a default answer."
-        print(f"Agent returning fixed answer: {fixed_answer}")
-        return fixed_answer
+
+        message = prompts_lib.system_prompt2 + question
+
+        response = main_agent.graph.invoke({'messages': message})
+
+        answer = response.get('messages')[1].content
+
+        # fixed_answer = "This is a default answer."
+        print(f"Agent returning answer: {answer}")
+        return answer
 
 def run_and_submit_all( profile: gr.OAuthProfile | None):
     """
