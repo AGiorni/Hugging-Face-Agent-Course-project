@@ -1,0 +1,44 @@
+# imports
+from typing import TypedDict, Annotated
+from langgraph.graph.message import add_messages
+from langchain_core.messages import AnyMessage
+from langchain_openai import AzureChatOpenAI
+from langgraph.graph import START, StateGraph
+
+import os
+from dotenv import load_dotenv  
+
+# load environment variables
+load_dotenv()  # take environment variables
+
+# define state
+class State(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+
+# create llm interface
+llm = AzureChatOpenAI(
+    deployment_name = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY"),
+    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT"),
+    openai_api_version = os.environ.get("OPENAI_API_VERSION"),
+    temperature=0
+    )
+
+# define nodes
+def assistant(state: State):
+    return {
+        "messages": [llm.invoke(state["messages"])],
+    }
+
+# define graph
+builder = StateGraph(State)
+
+# add nodes
+builder.add_node("assistant", assistant)
+
+# define edges
+builder.add_edge(START, "assistant")
+# No conditional edges in this simple example
+
+# compile gtaph
+graph = builder.compile()
