@@ -6,3 +6,4 @@ dotenv
 langchain-community
 ddgs
 langfuse
+wikipedia
