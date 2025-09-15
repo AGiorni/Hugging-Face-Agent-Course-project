@@ -3,3 +3,6 @@ requests
 langgraph
 langchain-openai
 dotenv
+langchain-community
+ddgs
+langfuse

@@ -4,6 +4,8 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import START, StateGraph
+from tools import duckduck_tool
+from langgraph.prebuilt import ToolNode, tools_condition
 
 import prompts_lib as my_prompts
 
@@ -26,7 +28,11 @@ llm = AzureChatOpenAI(
     temperature=0
     )
 
+# bild tools
+tools = [duckduck_tool]
+chat_w_tools = llm.bind_tools(tools)
 
+# load system prompt
 system_prompt = my_prompts.system_prompt
 system_message = SystemMessage(content=system_prompt)
 
@@ -36,15 +42,17 @@ def assistant(state: State):
         "messages": [llm.invoke(state["messages"])]
     }
 
+
 # define graph
 builder = StateGraph(State)
 
 # add nodes
 builder.add_node("assistant", assistant)
+builder.add_node("tools", ToolNode(tools))
 
 # define edges
 builder.add_edge(START, "assistant")
-# No conditional edges in this simple example
-
+builder.add_conditional_edges("assistant", tools_condition)
+builder.add_edge("tools", "assistant")
 # compile gtaph
 agent = builder.compile()

@@ -12,7 +12,8 @@ digits in plain text unless specified otherwise.
 If you are asked for a comma separated list, apply the above rules depending of whether the element
 to be put in the list is a number or a string.'''
 
-system_prompt2 = ''' You are a general AI assistant. I will ask you a question. Report just YOUR FINAL ANSWER.
+system_prompt2 = ''' You are a general AI assistant. I will ask you a question. Use the tools you have available if necessary.
+Report just YOUR FINAL ANSWER.
 YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated
 list of numbers and/or strings.
 If you are asked for a number, don’t use comma to write your number neither use units such as $ or

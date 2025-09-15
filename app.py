@@ -21,7 +21,7 @@ class BasicAgent:
 
         message = prompts_lib.system_prompt2 + question
 
-        response = main_agent.graph.invoke({'messages': message})
+        response = main_agent.agent.invoke({'messages': message})
 
         answer = response.get('messages')[1].content
 
