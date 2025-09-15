@@ -23,7 +23,7 @@ class BasicAgent:
 
         response = main_agent.agent.invoke({'messages': message})
 
-        answer = response.get('messages')[1].content
+        answer = response.get('messages')[-1].content
 
         # fixed_answer = "This is a default answer."
         print(f"Agent returning answer: {answer}")

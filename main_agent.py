@@ -33,13 +33,13 @@ tools = [duckduck_tool]
 chat_w_tools = llm.bind_tools(tools)
 
 # load system prompt
-system_prompt = my_prompts.system_prompt
+system_prompt = my_prompts.system_prompt2
 system_message = SystemMessage(content=system_prompt)
 
 # define nodes
 def assistant(state: State):
     return {
-        "messages": [llm.invoke(state["messages"])]
+        "messages": [chat_w_tools.invoke([system_message] + state["messages"])]
     }
 
 
@@ -52,7 +52,8 @@ builder.add_node("tools", ToolNode(tools))
 
 # define edges
 builder.add_edge(START, "assistant")
-builder.add_conditional_edges("assistant", tools_condition)
+builder.add_conditional_edges("assistant", tools_condition,
+                               {"tools": "tools", "__end__": "__end__"})
 builder.add_edge("tools", "assistant")
 # compile gtaph
 agent = builder.compile()
