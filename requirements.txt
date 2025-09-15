@@ -4,6 +4,7 @@ langgraph
 langchain-openai
 dotenv
 langchain-community
+langchain-chroma
 ddgs
 langfuse
 wikipedia

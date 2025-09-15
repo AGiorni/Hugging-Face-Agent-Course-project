@@ -4,7 +4,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import START, StateGraph
-from tools import duckduck_tool
+from tools import duckduck_tool, wiki_RAG_tool
 from langgraph.prebuilt import ToolNode, tools_condition
 
 import prompts_lib as my_prompts
@@ -29,7 +29,7 @@ llm = AzureChatOpenAI(
     )
 
 # bild tools
-tools = [duckduck_tool]
+tools = [duckduck_tool, wiki_RAG_tool]
 chat_w_tools = llm.bind_tools(tools)
 
 # load system prompt
