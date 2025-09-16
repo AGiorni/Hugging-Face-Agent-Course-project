@@ -121,7 +121,8 @@ def run_and_submit_all(
             submitted_answer = agent.builder.invoke(
                 input={'messages': question_text,
                 'file_path': file_path}
-                )
+                ).get('messages')[-1].content
+            
             answers_payload.append(
                 {"task_id": task_id, "submitted_answer": submitted_answer}
             )
