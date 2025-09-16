@@ -9,6 +9,7 @@ from langchain_core.tools import tool
 import base64
 import os
 from pydantic import BaseModel, Field
+from openai import AzureOpenAI
 
 
 from dotenv import load_dotenv  
@@ -72,10 +73,6 @@ llm_img = AzureChatOpenAI(
     temperature=0
     )
 
-
-
-
-
 class ImageAnalyserInput(BaseModel):
     image_path: str = Field(description="path to file")
 
@@ -106,11 +103,26 @@ def image_analyser_tool(image_path: str) -> str:
     response = llm_img.invoke([message])
     return response.content
 
-# image_analyser_tool = Tool(
-#     name="image analyser",
-#     func=image_analyser,
-#     description="Analises an image and returns a text description"
-# )
 
+
+# create wishper interface
+client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
+    api_version="2024-02-01",
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    )
+
+class AudioTranscriberInput(BaseModel):
+    audio_path: str = Field(description="path to audio file")
+
+@tool("audio-transcriber", args_schema=AudioTranscriberInput)
+def audio_transcriber_tool(audio_path: str) -> str:
+    """Receives path to audio file and returns text transcription of the audio recording."""
+
+    result = client.audio.transcriptions.create(
+        file=open(audio_path, "rb"),            
+        model='whisper'
+    )
+    return result
 
 
