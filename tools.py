@@ -10,6 +10,8 @@ import base64
 import os
 from pydantic import BaseModel, Field
 from openai import AzureOpenAI
+from langchain_experimental.utilities import PythonREPL
+from pathlib import Path
 
 
 from dotenv import load_dotenv  
@@ -126,3 +128,30 @@ def audio_transcriber_tool(audio_path: str) -> str:
     return result
 
 
+
+class PythonExecutorInput(BaseModel):
+    script_path: str = Field(description="path to python script")
+
+@tool("python-executor", args_schema=PythonExecutorInput)
+def python_executor_tool(script_path: str) -> str:
+    """Receives path to python script, execute the script and return result."""
+
+    # code execution tool
+    python_repl = PythonREPL()
+    result = python_repl.run(script_path)
+        
+    return result
+
+
+class OpenTextFilesInput(BaseModel):
+    script_path: str = Field(description="path to python script")
+
+@tool("python-script-opener", args_schema=OpenTextFilesInput)
+def python_script_opener(script_path: str) -> str:
+    """Receives path to python script, returns the content of the file."""
+
+    
+
+    file_content = Path(script_path).read_text()
+        
+    return file_content

@@ -4,7 +4,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import START, StateGraph
-from tools import duckduck_tool, wiki_RAG_tool, image_analyser_tool, audio_transcriber_tool
+from tools import duckduck_tool, wiki_RAG_tool, image_analyser_tool, audio_transcriber_tool, python_script_opener
 from langgraph.prebuilt import ToolNode, tools_condition
 
 import prompts_lib as my_prompts
@@ -30,7 +30,7 @@ llm = AzureChatOpenAI(
     )
 
 # bild tools
-tools = [duckduck_tool, wiki_RAG_tool, image_analyser_tool, audio_transcriber_tool]
+tools = [duckduck_tool, wiki_RAG_tool, image_analyser_tool, audio_transcriber_tool, python_script_opener]
 chat_w_tools = llm.bind_tools(tools)
 
 # load system prompt
