@@ -1,10 +1,10 @@
 # imports
-from typing import TypedDict, Annotated
+from typing import TypedDict, Annotated, Optional
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import START, StateGraph
-from tools import duckduck_tool, wiki_RAG_tool
+from tools import duckduck_tool, wiki_RAG_tool, image_analyser_tool
 from langgraph.prebuilt import ToolNode, tools_condition
 
 import prompts_lib as my_prompts
@@ -18,6 +18,7 @@ load_dotenv()  # take environment variables
 # define state
 class State(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
+    file_path: Optional[str]
 
 # create llm interface
 llm = AzureChatOpenAI(
@@ -29,7 +30,7 @@ llm = AzureChatOpenAI(
     )
 
 # bild tools
-tools = [duckduck_tool, wiki_RAG_tool]
+tools = [duckduck_tool, wiki_RAG_tool, image_analyser_tool]
 chat_w_tools = llm.bind_tools(tools)
 
 # load system prompt
@@ -38,8 +39,12 @@ system_message = SystemMessage(content=system_prompt)
 
 # define nodes
 def assistant(state: State):
+
+    file_path = state.get("file_path", None)
+    if file_path:
+        state["messages"].append(SystemMessage(content=f"File path provided: {file_path}"))
     return {
-        "messages": [chat_w_tools.invoke([system_message] + state["messages"])]
+        "messages": [chat_w_tools.invoke([system_message] + state["messages"])],
     }
 
 
@@ -56,4 +61,8 @@ builder.add_conditional_edges("assistant", tools_condition,
                                {"tools": "tools", "__end__": "__end__"})
 builder.add_edge("tools", "assistant")
 # compile gtaph
-agent = builder.compile()
+# agent = builder.compile()
+
+class Agent:
+    def __init__(self):
+        self.builder = builder.compile()

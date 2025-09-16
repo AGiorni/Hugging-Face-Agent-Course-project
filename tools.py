@@ -4,8 +4,13 @@ from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.document_loaders import WikipediaLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_openai import AzureOpenAIEmbeddings   
+from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI   
+from langchain_core.tools import tool
+import base64
 import os
+from pydantic import BaseModel, Field
+
+
 from dotenv import load_dotenv  
 
 # load environment variables
@@ -33,7 +38,7 @@ embeddings = AzureOpenAIEmbeddings(
 def wiki_RAG(query: str):
     """####"""
     
-    loader = WikipediaLoader(query=query, load_max_docs=2)
+    loader = WikipediaLoader(query=query, load_max_docs=5)
     docs = loader.load()
     
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
@@ -54,3 +59,58 @@ wiki_RAG_tool = Tool(
     func=wiki_RAG,
     description="Searches information in wikipedia."
 )
+
+
+# image analyser
+
+# create llm interface
+llm_img = AzureChatOpenAI(
+    deployment_name = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY"),
+    azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT"),
+    openai_api_version = os.environ.get("OPENAI_API_VERSION"),
+    temperature=0
+    )
+
+
+
+
+
+class ImageAnalyserInput(BaseModel):
+    image_path: str = Field(description="path to file")
+
+
+@tool("image-analyser", args_schema=ImageAnalyserInput)
+def image_analyser_tool(image_path: str) -> str:
+    """Analyzes an image and returns a description."""
+
+    with open(image_path, "rb") as image_file:
+        image_data = base64.b64encode(image_file.read()).decode("utf-8")
+
+    message = {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Describe this image",
+            },
+            {
+                "type": "image",
+                "source_type": "base64",
+                "data": image_data,
+                "mime_type": "image/jpeg",
+            },
+        ],
+    }
+
+    response = llm_img.invoke([message])
+    return response.content
+
+# image_analyser_tool = Tool(
+#     name="image analyser",
+#     func=image_analyser,
+#     description="Analises an image and returns a text description"
+# )
+
+
+
